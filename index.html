@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MusicSet — フェスのプレイリストを数秒で</title>
+  <meta name="description" content="タイムテーブルをスキャンするだけ。フェスの推しアーティストをApple Musicのプレイリストに自動追加。">
+  <meta property="og:title" content="MusicSet — フェスのプレイリストを数秒で">
+  <meta property="og:description" content="タイムテーブルをスキャンするだけ。フェスの推しアーティストをApple Musicのプレイリストに自動追加。">
+  <meta property="og:image" content="https://yukiya0330.github.io/images/01_home.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue: #5BA4E5;
+      --purple: #8B7FD4;
+      --dark: #1C1C2E;
+      --gray: #6B7280;
+      --light: #F8FAFF;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      color: var(--dark);
+      background: var(--white);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark);
+      text-decoration: none;
+    }
+
+    .nav-logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+    }
+
+    .nav-logo .logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--dark);
+      color: white;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    .btn-download:hover { opacity: 0.8; }
+
+    /* HERO */
+    .hero {
+      padding: 140px 40px 80px;
+      text-align: center;
+      background: linear-gradient(180deg, #EEF4FF 0%, var(--white) 100%);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(91, 164, 229, 0.12);
+      color: var(--blue);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--gray);
+      max-width: 480px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 64px;
+    }
+
+    .btn-appstore {
+      display: inline-block;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .btn-appstore:hover { transform: scale(1.03); opacity: 0.9; }
+
+    .btn-appstore img {
+      height: 52px;
+    }
+
+    .hero-screenshots {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      align-items: flex-end;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-screenshots img {
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      transition: transform 0.3s;
+    }
+
+    .hero-screenshots img:nth-child(1) { width: 220px; transform: rotate(-3deg) translateY(20px); }
+    .hero-screenshots img:nth-child(2) { width: 240px; z-index: 2; }
+    .hero-screenshots img:nth-child(3) { width: 220px; transform: rotate(3deg) translateY(20px); }
+
+    .hero-screenshots img:hover { transform: rotate(0) translateY(-8px) scale(1.02); z-index: 3; }
+
+    /* FEATURES */
+    .features {
+      padding: 100px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--blue);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 64px;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 80px;
+    }
+
+    .feature-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .feature-item.reverse { direction: rtl; }
+    .feature-item.reverse > * { direction: ltr; }
+
+    .feature-text .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--light);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple);
+      margin-bottom: 16px;
+    }
+
+    .feature-text h3 {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    .feature-text p {
+      font-size: 16px;
+      color: var(--gray);
+      line-height: 1.75;
+    }
+
+    .feature-image {
+      display: flex;
+      justify-content: center;
+    }
+
+    .feature-image img {
+      width: 260px;
+      border-radius: 28px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.12);
+    }
+
+    /* CTA */
+    .cta {
+      margin: 60px 40px 100px;
+      padding: 64px 40px;
+      background: linear-gradient(135deg, #5BA4E5 0%, #8B7FD4 100%);
+      border-radius: 32px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+      color: white;
+    }
+
+    .cta h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .cta p {
+      font-size: 17px;
+      opacity: 0.85;
+      margin-bottom: 36px;
+    }
+
+    .btn-appstore-white img { height: 52px; }
+    .btn-appstore-white { display: inline-block; transition: transform 0.2s, opacity 0.2s; }
+    .btn-appstore-white:hover { transform: scale(1.03); opacity: 0.9; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--dark);
+      text-decoration: none;
+    }
+
+    footer .logo-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 13px;
+    }
+
+    footer .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    footer .footer-links a {
+      font-size: 14px;
+      color: var(--gray);
+      text-decoration: none;
+    }
+
+    footer .footer-links a:hover { color: var(--dark); }
+
+    footer .footer-copy {
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .hero { padding: 120px 24px 60px; }
+      .hero-screenshots img:nth-child(1),
+      .hero-screenshots img:nth-child(3) { display: none; }
+      .hero-screenshots img:nth-child(2) { width: 260px; transform: none; }
+      .features { padding: 60px 24px; }
+      .feature-item { grid-template-columns: 1fr; }
+      .feature-item.reverse { direction: ltr; }
+      .feature-image { order: -1; }
+      .cta { margin: 40px 24px 60px; padding: 48px 28px; border-radius: 24px; }
+      footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="logo-icon">♪</div>
+      MusicSet
+    </a>
+    <a href="https://apps.apple.com/jp/app/musicset/id6763155689" class="btn-download" target="_blank">
+      ダウンロード
+    </a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">🎪 フェス × Apple Music</div>
+    <h1>フェスのプレイリストを<br><span>数秒でつくろう</span></h1>
+    <p class="hero-sub">タイムテーブルをスキャンするだけ。推しアーティストの曲がApple Musicに自動で並ぶ。</p>
+    <div class="hero-actions">
+      <a href="https://apps.apple.com/jp/app/musicset/id6763155689" class="btn-appstore" target="_blank">
+        <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/ja-jp?size=250x83" alt="Download on the App Store">
+      </a>
+    </div>
+    <div class="hero-screenshots">
+      <img src="images/01_home.png" alt="MusicSet ホーム画面">
+      <img src="images/02_timetable.png" alt="タイムテーブル確認画面">
+      <img src="images/03_playlist.png" alt="プレイリスト作成画面">
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <p class="section-label">Features</p>
+    <h2 class="section-title">フェスをもっと楽しくする、<br>3つの機能</h2>
+
+    <div class="feature-list">
+
+      <div class="feature-item">
+        <div class="feature-text">
+          <span class="tag">SCAN</span>
+          <h3>スキャンするだけで<br>タイムテーブル完成</h3>
+          <p>タイムテーブルの画像を読み込むだけで、出演アーティストを自動で検出。手入力ゼロで、フェス前の準備が一瞬で終わる。</p>
+        </div>
+        <div class="feature-image">
+          <img src="images/01_home.png" alt="スキャン機能">
+        </div>
+      </div>
+
+      <div class="feature-item reverse">
+        <div class="feature-text">
+          <span class="tag">PLAYLIST</span>
+          <h3>Apple Musicに<br>プレイリストを自動作成</h3>
+          <p>気になるアーティストを選ぶだけで、Apple Musicのプレイリストを自動生成。フェス前に推しの曲を予習して、当日を10倍楽しもう。</p>
+        </div>
+        <div class="feature-image">
+          <img src="images/03_playlist.png" alt="プレイリスト作成">
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-text">
+          <span class="tag">COMMUNITY</span>
+          <h3>みんなのタイムテーブルを<br>シェアしよう</h3>
+          <p>コミュニティ機能でほかのユーザーのタイムテーブルを発見。ライブのセトリをシェアして、フェス仲間と盛り上がれる。</p>
+        </div>
+        <div class="feature-image">
+          <img src="images/05_share.png" alt="シェア機能">
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <h2>次のフェス、<br>MusicSetで行こう。</h2>
+    <p>無料でダウンロードして、すぐに使える。</p>
+    <a href="https://apps.apple.com/jp/app/musicset/id6763155689" class="btn-appstore-white" target="_blank">
+      <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/white/ja-jp?size=250x83" alt="Download on the App Store">
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="/" class="footer-logo">
+      <div class="logo-icon">♪</div>
+      MusicSet
+    </a>
+    <div class="footer-links">
+      <a href="/privacy-policy.html">プライバシーポリシー</a>
+    </div>
+    <p class="footer-copy">© 2026 MusicSet</p>
+  </footer>
+
+</body>
+</html>
