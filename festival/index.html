@@ -45,16 +45,6 @@
       line-height: 1.6;
       margin-bottom: 32px;
     }
-    .spinner {
-      width: 28px;
-      height: 28px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #5BA4E5;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 24px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
     .btn {
       display: inline-flex;
       align-items: center;
@@ -67,62 +57,61 @@
       font-size: 15px;
       font-weight: 600;
       transition: opacity 0.2s;
+      margin-bottom: 12px;
     }
     .btn:hover { opacity: 0.8; }
+    .btn-store {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: transparent;
+      color: #6B7280;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .btn-store:hover { opacity: 0.7; }
     .note {
       font-size: 12px;
       color: #9CA3AF;
       margin-top: 20px;
     }
-    #open-btn { display: none; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="icon">🎪</div>
-    <h1>タイムテーブルを開いています</h1>
-    <p>MusicSetアプリで確認できます</p>
-    <div class="spinner" id="spinner"></div>
-    <a href="#" class="btn" id="open-btn">
-      アプリで開く
+    <h1>タイムテーブルを確認</h1>
+    <p>MusicSetアプリで開いてください</p>
+    <a href="#" class="btn" id="open-btn">アプリで開く</a>
+    <br>
+    <a href="https://apps.apple.com/jp/app/musicset/id6763155689" class="btn-store">
+      App Storeでダウンロード
     </a>
-    <p class="note" id="note-text">アプリを起動中...</p>
+    <p class="note" id="note-text"></p>
   </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    const APP_STORE_URL = 'https://apps.apple.com/jp/app/musicset/id6763155689';
 
     if (!id) {
       window.location.href = '/';
     } else {
       const appURL = 'musicset://festival/' + id;
       const openBtn = document.getElementById('open-btn');
-      const spinner = document.getElementById('spinner');
-      const noteText = document.getElementById('note-text');
-
       openBtn.href = appURL;
 
-      // アプリ起動を試みる
-      window.location.href = appURL;
-
-      // 1.8秒後にアプリが起動しなかった場合の処理
-      setTimeout(() => {
-        spinner.style.display = 'none';
-        openBtn.style.display = 'inline-flex';
-        noteText.textContent = 'アプリがない場合はApp Storeからダウンロード';
-      }, 1800);
-
-      // 2.8秒後にApp Storeへ（ユーザーがボタンを押さなかった場合）
-      // ※ アプリが開いた場合はページが隠れるためこのタイマーは動かない
-      let redirected = false;
+      // Safariでは自動起動を試みる（アプリが開けば visibilitychange で hidden になる）
+      let launched = false;
       document.addEventListener('visibilitychange', () => {
-        if (document.hidden) redirected = true;
+        if (document.hidden) launched = true;
       });
-      setTimeout(() => {
-        if (!redirected) window.location.href = APP_STORE_URL;
-      }, 2800);
+      window.location.href = appURL;
     }
   </script>
 </body>
