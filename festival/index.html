@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MusicSet — タイムテーブルを開く</title>
+  <meta name="description" content="MusicSetアプリでタイムテーブルを確認しよう">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: linear-gradient(180deg, #EEF4FF 0%, #fff 60%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1C1C2E;
+    }
+    .card {
+      text-align: center;
+      padding: 48px 32px;
+      max-width: 360px;
+      width: 100%;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #5BA4E5, #8B7FD4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 24px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    p {
+      font-size: 15px;
+      color: #6B7280;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #5BA4E5;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: #1C1C2E;
+      color: white;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .note {
+      font-size: 12px;
+      color: #9CA3AF;
+      margin-top: 20px;
+    }
+    #open-btn { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🎪</div>
+    <h1>タイムテーブルを開いています</h1>
+    <p>MusicSetアプリで確認できます</p>
+    <div class="spinner" id="spinner"></div>
+    <a href="#" class="btn" id="open-btn">
+      アプリで開く
+    </a>
+    <p class="note" id="note-text">アプリを起動中...</p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const APP_STORE_URL = 'https://apps.apple.com/jp/app/musicset/id6763155689';
+
+    if (!id) {
+      window.location.href = '/';
+    } else {
+      const appURL = 'musicset://festival/' + id;
+      const openBtn = document.getElementById('open-btn');
+      const spinner = document.getElementById('spinner');
+      const noteText = document.getElementById('note-text');
+
+      openBtn.href = appURL;
+
+      // アプリ起動を試みる
+      window.location.href = appURL;
+
+      // 1.8秒後にアプリが起動しなかった場合の処理
+      setTimeout(() => {
+        spinner.style.display = 'none';
+        openBtn.style.display = 'inline-flex';
+        noteText.textContent = 'アプリがない場合はApp Storeからダウンロード';
+      }, 1800);
+
+      // 2.8秒後にApp Storeへ（ユーザーがボタンを押さなかった場合）
+      // ※ アプリが開いた場合はページが隠れるためこのタイマーは動かない
+      let redirected = false;
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) redirected = true;
+      });
+      setTimeout(() => {
+        if (!redirected) window.location.href = APP_STORE_URL;
+      }, 2800);
+    }
+  </script>
+</body>
+</html>
