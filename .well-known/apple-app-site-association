@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["D7NDASTVVP.com.yukiya0330.musicset"],
+        "components": [
+          { "/": "/festival/*" },
+          { "/": "/festival/" }
+        ]
+      }
+    ]
+  }
+}
